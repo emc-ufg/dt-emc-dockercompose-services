@@ -1,0 +1,156 @@
+version: '2.4'
+
+services:
+  mongodb:
+    image: docker.io/mongo:5.0
+    mem_limit: 256m
+    restart: always
+    networks:
+      default:
+        aliases:
+          - mongodb
+    command: mongod --storageEngine wiredTiger --noscripting
+    user: mongodb
+    ports:
+      - 27017:27017
+    environment:
+       TZ: Europe/Berlin
+
+  policies:
+    image: docker.io/eclipse/ditto-policies:${DITTO_VERSION:-latest}
+    mem_limit: 512m
+    restart: always
+    networks:
+      default:
+        aliases:
+          - ditto-cluster
+    environment:
+      - TZ=Europe/Berlin
+      - BIND_HOSTNAME=0.0.0.0
+      # Configurações adicionais para o serviço Policies (Eclipse Ditto)...
+
+  things:
+    image: docker.io/eclipse/ditto-things:${DITTO_VERSION:-latest}
+    mem_limit: 512m
+    restart: always
+    networks:
+      default:
+        aliases:
+          - ditto-cluster
+    depends_on:
+      - policies
+    environment:
+      - TZ=Europe/Berlin
+      - BIND_HOSTNAME=0.0.0.0
+      # Configurações adicionais para o serviço Things (Eclipse Ditto)...
+
+  things-search:
+    image: docker.io/eclipse/ditto-things-search:${DITTO_VERSION:-latest}
+    mem_limit: 512m
+    restart: always
+    networks:
+      default:
+        aliases:
+          - ditto-cluster
+    depends_on:
+      - policies
+    environment:
+      - TZ=Europe/Berlin
+      - BIND_HOSTNAME=0.0.0.0
+      # Configurações adicionais para o serviço Things Search (Eclipse Ditto)...
+
+  connectivity:
+    image: docker.io/eclipse/ditto-connectivity:${DITTO_VERSION:-latest}
+    mem_limit: 768m
+    restart: always
+    networks:
+      default:
+        aliases:
+          - ditto-cluster
+    depends_on:
+      - policies
+    environment:
+      - TZ=Europe/Berlin
+      - BIND_HOSTNAME=0.0.0.0
+      # Configurações adicionais para o serviço Connectivity (Eclipse Ditto)...
+
+  gateway:
+    image: docker.io/eclipse/ditto-gateway:${DITTO_VERSION:-latest}
+    mem_limit: 512m
+    restart: always
+    networks:
+      default:
+        aliases:
+          - ditto-cluster
+    depends_on:
+      - policies
+    ports:
+      - "8081:8080"
+    environment:
+      - TZ=Europe/Berlin
+      - BIND_HOSTNAME=0.0.0.0
+      - ENABLE_PRE_AUTHENTICATION=true
+      # Configurações adicionais para o serviço Gateway (Eclipse Ditto)...
+
+  ditto-ui:
+    image: docker.io/eclipse/ditto-ui:${DITTO_VERSION:-latest}
+    mem_limit: 32m
+    restart: always
+
+  swagger-ui:
+    image: docker.io/swaggerapi/swagger-ui:v5.9.1
+    mem_limit: 32m
+    restart: always
+    environment:
+      - QUERY_CONFIG_ENABLED=true
+    volumes:
+       - ../../documentation/src/main/resources/openapi:/usr/share/nginx/html/openapi:ro
+       - ../../documentation/src/main/resources/images:/usr/share/nginx/html/images:ro
+       - ./swagger3-index.html:/usr/share/nginx/html/index.html:ro
+    command: nginx -g 'daemon off;'
+
+  nginx:
+    image: docker.io/nginx:1.21-alpine
+    mem_limit: 32m
+    restart: always
+    volumes:
+       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+       - ./nginx.htpasswd:/etc/nginx/nginx.htpasswd:ro
+       - ./nginx-cors.conf:/etc/nginx/nginx-cors.conf:ro
+       - ./mime.types:/etc/nginx/mime.types:ro
+       - ./index.html:/etc/nginx/html/index.html:ro
+       - ../../documentation/src/main/resources/images:/etc/nginx/html/images:ro
+       - ../../documentation/src/main/resources/wot:/etc/nginx/html/wot:ro
+    ports:
+      - "${DITTO_EXTERNAL_PORT:-8080}:80"
+    depends_on:
+      - gateway
+
+  mosquitto:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    expose:
+      - "9093"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,OUTSIDE://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    # Configurações para o serviço Zookeeper...
