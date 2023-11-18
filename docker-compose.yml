@@ -1,5 +1,9 @@
 version: '2.4'
 
+networks:
+  ditto-network:
+    driver: bridge
+
 services:
   mongodb:
     image: docker.io/mongo:5.0
@@ -15,6 +19,8 @@ services:
       - 27017:27017
     environment:
        TZ: Europe/Berlin
+    networks:
+      - ditto-network
 
   policies:
     image: docker.io/eclipse/ditto-policies:${DITTO_VERSION:-latest}
@@ -28,6 +34,8 @@ services:
       - TZ=Europe/Berlin
       - BIND_HOSTNAME=0.0.0.0
       # Configurações adicionais para o serviço Policies (Eclipse Ditto)...
+    networks:
+      - ditto-network
 
   things:
     image: docker.io/eclipse/ditto-things:${DITTO_VERSION:-latest}
@@ -43,6 +51,8 @@ services:
       - TZ=Europe/Berlin
       - BIND_HOSTNAME=0.0.0.0
       # Configurações adicionais para o serviço Things (Eclipse Ditto)...
+    networks:
+      - ditto-network
 
   things-search:
     image: docker.io/eclipse/ditto-things-search:${DITTO_VERSION:-latest}
@@ -58,6 +68,8 @@ services:
       - TZ=Europe/Berlin
       - BIND_HOSTNAME=0.0.0.0
       # Configurações adicionais para o serviço Things Search (Eclipse Ditto)...
+    networks:
+      - ditto-network
 
   connectivity:
     image: docker.io/eclipse/ditto-connectivity:${DITTO_VERSION:-latest}
@@ -73,6 +85,8 @@ services:
       - TZ=Europe/Berlin
       - BIND_HOSTNAME=0.0.0.0
       # Configurações adicionais para o serviço Connectivity (Eclipse Ditto)...
+    networks:
+      - ditto-network
 
   gateway:
     image: docker.io/eclipse/ditto-gateway:${DITTO_VERSION:-latest}
@@ -91,11 +105,15 @@ services:
       - BIND_HOSTNAME=0.0.0.0
       - ENABLE_PRE_AUTHENTICATION=true
       # Configurações adicionais para o serviço Gateway (Eclipse Ditto)...
+    networks:
+      - ditto-network
 
   ditto-ui:
     image: docker.io/eclipse/ditto-ui:${DITTO_VERSION:-latest}
     mem_limit: 32m
     restart: always
+    networks:
+      - ditto-network
 
   swagger-ui:
     image: docker.io/swaggerapi/swagger-ui:v5.9.1
@@ -108,6 +126,8 @@ services:
        - ../../documentation/src/main/resources/images:/usr/share/nginx/html/images:ro
        - ./swagger3-index.html:/usr/share/nginx/html/index.html:ro
     command: nginx -g 'daemon off;'
+    networks:
+      - ditto-network
 
   nginx:
     image: docker.io/nginx:1.21-alpine
@@ -125,16 +145,27 @@ services:
       - "${DITTO_EXTERNAL_PORT:-8070}:80"
     depends_on:
       - gateway
+    networks:
+      - ditto-network
 
   mosquitto:
     image: eclipse-mosquitto
+    networks:
+      - ditto-network
     ports:
-      - "1883:1883"
-
+      - 1883 #default mqtt port
+      - 9001 #default mqtt port for websockets
+    volumes:
+      - ./config:/mosquitto/config:rw
+      - ./data:/mosquitto/data:rw
+      - ./log:/mosquitto/log:rw
+    
   grafana:
     image: grafana/grafana
     ports:
       - "3000:3000"
+    networks:
+      - ditto-network
 
   kafka-ui:
     container_name: kafka-ui
@@ -159,6 +190,8 @@ services:
       KAFKA_CLUSTERS_1_METRICS_PORT: 9998
       KAFKA_CLUSTERS_1_SCHEMAREGISTRY: http://schemaregistry1:8085
       DYNAMIC_CONFIG_ENABLED: 'true'
+    networks:
+      - ditto-network
 
   kafka0:
     image: confluentinc/cp-kafka:7.2.1
@@ -187,6 +220,8 @@ services:
     volumes:
       - ./scripts/update_run.sh:/tmp/update_run.sh
     command: "bash -c 'if [ ! -f /tmp/update_run.sh ]; then echo \"ERROR: Did you forget the update_run.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/update_run.sh && /etc/confluent/docker/run ; fi'"
+    networks:
+      - ditto-network
 
   kafka1:
     image: confluentinc/cp-kafka:7.2.1
@@ -215,6 +250,8 @@ services:
     volumes:
       - ./scripts/update_run.sh:/tmp/update_run.sh
     command: "bash -c 'if [ ! -f /tmp/update_run.sh ]; then echo \"ERROR: Did you forget the update_run.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/update_run.sh && /etc/confluent/docker/run ; fi'"
+    networks:
+      - ditto-network
 
   schemaregistry0:
     image: confluentinc/cp-schema-registry:7.2.1
@@ -231,6 +268,8 @@ services:
       SCHEMA_REGISTRY_SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL: "http"
       SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
       SCHEMA_REGISTRY_KAFKASTORE_TOPIC: _schemas
+    networks:
+      - ditto-network
 
   schemaregistry1:
     image: confluentinc/cp-schema-registry:7.2.1
@@ -247,6 +286,8 @@ services:
       SCHEMA_REGISTRY_SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL: "http"
       SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
       SCHEMA_REGISTRY_KAFKASTORE_TOPIC: _schemas
+    networks:
+      - ditto-network
 
   kafka-connect0:
     image: confluentinc/cp-kafka-connect:7.2.1
@@ -272,6 +313,8 @@ services:
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect0
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+    networks:
+      - ditto-network
 
   kafka-init-topics:
     image: confluentinc/cp-kafka:7.2.1
@@ -285,4 +328,10 @@ services:
                kafka-topics --create --topic second.messages --partitions 2 --replication-factor 1 --if-not-exists --bootstrap-server kafka1:29092 && \
                kafka-topics --create --topic first.messages --partitions 2 --replication-factor 1 --if-not-exists --bootstrap-server kafka0:29092 && \
                kafka-console-producer --bootstrap-server kafka1:29092 -topic second.users < /data/message.json'"
-            
+    networks:
+      - ditto-network
+
+volumes:
+  config:
+  data:
+  log:
