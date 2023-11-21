@@ -20,7 +20,9 @@ services:
     mem_limit: 256m
     restart: always
     networks:
-      - ditto-network
+      default:
+        aliases:
+          - mongodb
     command: mongod --storageEngine wiredTiger --noscripting
     user: mongodb
     ports:
@@ -33,7 +35,9 @@ services:
     mem_limit: 512m
     restart: always
     networks:
-      - ditto-network
+      default:
+        aliases:
+          - ditto-cluster
     environment:
       - TZ=Europe/Berlin
       - BIND_HOSTNAME=0.0.0.0
@@ -58,7 +62,9 @@ services:
     mem_limit: 512m
     restart: always
     networks:
-      - ditto-network
+      default:
+        aliases:
+          - ditto-cluster
     depends_on:
       - policies
     environment:
@@ -85,7 +91,9 @@ services:
     mem_limit: 512m
     restart: always
     networks:
-      - ditto-network
+      default:
+        aliases:
+          - ditto-cluster
     depends_on:
       - policies
     environment:
@@ -112,7 +120,9 @@ services:
     mem_limit: 768m
     restart: always
     networks:
-      - ditto-network
+      default:
+        aliases:
+          - ditto-cluster
     depends_on:
       - policies
     environment:
@@ -140,7 +150,9 @@ services:
     mem_limit: 512m
     restart: always
     networks:
-      - ditto-network
+      default:
+        aliases:
+          - ditto-cluster
     depends_on:
       - policies
     ports:
@@ -169,15 +181,11 @@ services:
   ditto-ui:
     image: docker.io/eclipse/ditto-ui:${DITTO_VERSION:-latest}
     mem_limit: 32m
-    networks:
-      - ditto-network
     restart: always
 
   swagger-ui:
     image: docker.io/swaggerapi/swagger-ui:v5.9.1
     mem_limit: 32m
-    networks:
-      - ditto-network
     restart: always
     environment:
       - QUERY_CONFIG_ENABLED=true
@@ -190,8 +198,6 @@ services:
   nginx:
     image: docker.io/nginx:1.21-alpine
     mem_limit: 32m
-    networks:
-      - ditto-network
     restart: always
     volumes:
        - ./nginx.conf:/etc/nginx/nginx.conf:ro
