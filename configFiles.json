@@ -1,0 +1,41 @@
+{
+    "targetActorSelection": "/system/sharding/connection",
+    "headers": {
+        "aggregate": false
+    },
+    "piggybackCommand": {
+        "type": "connectivity.commands:createConnection",
+        "connection": {
+            "id": "MyKafkaConnection1",
+            "connectionType": "kafka",
+            "connectionStatus": "open",
+            "uri": "tcp://admin:admin@localhost:9092",
+            "specificConfig": {
+            "bootstrapServers": "127.0.0.1:9092",
+            "saslMechanism": "plain"
+            },
+            "failoverEnabled": true,
+            "targets": [
+                  {
+                 "address": "ditto-tutorial/{{ thing:id }}",
+                  "topics": [
+                   "_/_/things/twin/events",
+                   "_/_/things/live/messages"
+                                ],
+                "authorizationContext": ["ditto:outbound-auth-subject"]
+            }],
+            "mappingContext": {
+                "mappingEngine": "JavaScript",
+                "options": {
+                    "incomingScript": "function mapToDittoProtocolMsg(\n    headers,\n    textPayload,\n    bytePayload,\n    contentType\n) {\n\n    if (contentType !== \"application/json\") {\n        return null;\n    }\n\n    var jsonData = JSON.parse(textPayload);\n    var temperature = jsonData.temp;\n    var humidity = jsonData.hum;\n    \n    var path;\n    var value;\n    if (temperature != null && humidity != null) {\n        path = \"/features\";\n        value = {\n                temperature: {\n                    properties: {\n                        value: temperature\n                    }\n                },\n                humidity: {\n                    properties: {\n                        value: humidity\n                    }\n                }\n            };\n    } else if (temperature != null) {\n        path = \"/features/temperature/properties/value\";\n        value = temperature;\n    } else if (humidity != null) {\n        path = \"/features/humidity/properties/value\";\n        value = humidity;\n    }\n    \n    if (!path || !value) {\n        return null;\n    }\n\n    return Ditto.buildDittoProtocolMsg(\n        \"org.eclipse.ditto\",\n        headers[\"device_id\"],\n        \"things\",\n        \"twin\",\n        \"commands\",\n        \"modify\",\n        path,\n        headers,\n        value\n    );\n}"
+                }
+            }
+        }
+    }
+    }
+    
+    
+    
+    
+    
+    https://github.com/eclipse-ditto/ditto-examples/tree/master/mqtt-bidirectional
