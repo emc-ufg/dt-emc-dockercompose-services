@@ -33,7 +33,15 @@ services:
     environment:
       - TZ=Europe/Berlin
       - BIND_HOSTNAME=0.0.0.0
-      # Configurações adicionais para o serviço Policies (Eclipse Ditto)...
+      # Set additional configuration options here appending JAVA_TOOL_OPTIONS: -Dditto.policies...
+      - JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount=2 -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:+UseStringDeduplication -Xss512k -XX:MaxRAMPercentage=50 -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -Dpekko.coordinated-shutdown.exit-jvm=on -Dpekko.cluster.shutdown-after-unsuccessful-join-seed-nodes=180s -Dpekko.cluster.failure-detector.threshold=15.0 -Dpekko.cluster.failure-detector.expected-response-after=10s -Dpekko.cluster.failure-detector.acceptable-heartbeat-pause=20s -Dpekko.cluster.downing-provider-class=
+      - MONGO_DB_HOSTNAME=mongodb
+      # in order to write logs into a file you can enable this by setting the following env variable
+      # the log file(s) can be found in /var/log/ditto directory on the host machine
+      # - DITTO_LOGGING_FILE_APPENDER=true
+    # only needed if DITTO_LOGGING_FILE_APPENDER is set
+    # volumes:
+    #  - ditto_log_files:/var/log/ditto
     networks:
       - ditto-network
 
@@ -50,7 +58,15 @@ services:
     environment:
       - TZ=Europe/Berlin
       - BIND_HOSTNAME=0.0.0.0
-      # Configurações adicionais para o serviço Things (Eclipse Ditto)...
+      # Set additional configuration options here appending JAVA_TOOL_OPTIONS: -Dditto.things...
+      - JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount=2 -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:+UseStringDeduplication -Xss512k -XX:MaxRAMPercentage=50 -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -Dpekko.coordinated-shutdown.exit-jvm=on -Dpekko.cluster.shutdown-after-unsuccessful-join-seed-nodes=180s -Dpekko.cluster.failure-detector.threshold=15.0 -Dpekko.cluster.failure-detector.expected-response-after=10s -Dpekko.cluster.failure-detector.acceptable-heartbeat-pause=20s -Dpekko.cluster.downing-provider-class=
+      - MONGO_DB_HOSTNAME=mongodb
+      # in order to write logs into a file you can enable this by setting the following env variable
+      # the log file(s) can be found in /var/log/ditto directory on the host machine
+      # - DITTO_LOGGING_FILE_APPENDER=true
+    # only needed if DITTO_LOGGING_FILE_APPENDER is set
+    # volumes:
+    #  - ditto_log_files:/var/log/ditto
     networks:
       - ditto-network
 
@@ -67,7 +83,15 @@ services:
     environment:
       - TZ=Europe/Berlin
       - BIND_HOSTNAME=0.0.0.0
-      # Configurações adicionais para o serviço Things Search (Eclipse Ditto)...
+      # Set additional configuration options here appending JAVA_TOOL_OPTIONS: -Dditto.search...
+      - JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount=2 -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:+UseStringDeduplication -Xss512k -XX:MaxRAMPercentage=50 -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -Dpekko.coordinated-shutdown.exit-jvm=on -Dpekko.cluster.shutdown-after-unsuccessful-join-seed-nodes=180s -Dpekko.cluster.failure-detector.threshold=15.0 -Dpekko.cluster.failure-detector.expected-response-after=10s -Dpekko.cluster.failure-detector.acceptable-heartbeat-pause=20s -Dpekko.cluster.downing-provider-class=
+      - MONGO_DB_HOSTNAME=mongodb
+      # in order to write logs into a file you can enable this by setting the following env variable
+      # the log file(s) can be found in /var/log/ditto directory on the host machine
+      # - DITTO_LOGGING_FILE_APPENDER=true
+    # only needed if DITTO_LOGGING_FILE_APPENDER is set
+    # volumes:
+    #  - ditto_log_files:/var/log/ditto
     networks:
       - ditto-network
 
@@ -84,7 +108,16 @@ services:
     environment:
       - TZ=Europe/Berlin
       - BIND_HOSTNAME=0.0.0.0
-      # Configurações adicionais para o serviço Connectivity (Eclipse Ditto)...
+      # if connections to rabbitmq broker are used, you might want to disable ExitOnOutOfMemoryError, because the amqp-client has a bug throwing OOM exceptions and causing a restart loop
+      # Set additional configuration options here appending JAVA_TOOL_OPTIONS: -Dditto.connectivity...
+      - JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount=2 -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:+UseStringDeduplication -Xss512k -XX:MaxRAMPercentage=50 -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -Dpekko.coordinated-shutdown.exit-jvm=on -Dpekko.cluster.shutdown-after-unsuccessful-join-seed-nodes=180s -Dpekko.cluster.failure-detector.threshold=15.0 -Dpekko.cluster.failure-detector.expected-response-after=10s -Dpekko.cluster.failure-detector.acceptable-heartbeat-pause=20s -Dpekko.cluster.downing-provider-class=
+      - MONGO_DB_HOSTNAME=mongodb
+      # in order to write logs into a file you can enable this by setting the following env variable
+      # the log file(s) can be found in /var/log/ditto directory on the host machine
+      # - DITTO_LOGGING_FILE_APPENDER=true
+    # only needed if DITTO_LOGGING_FILE_APPENDER is set
+    #volumes:
+    #  - ditto_log_files:/var/log/ditto
     networks:
       - ditto-network
 
@@ -104,7 +137,16 @@ services:
       - TZ=Europe/Berlin
       - BIND_HOSTNAME=0.0.0.0
       - ENABLE_PRE_AUTHENTICATION=true
-      # Configurações adicionais para o serviço Gateway (Eclipse Ditto)...
+      # Set additional configuration options here appending JAVA_TOOL_OPTIONS: -Dditto.gateway.authentication.devops.password=foobar -Dditto.gateway...
+      - JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount=2 -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:+UseStringDeduplication -Xss512k -XX:MaxRAMPercentage=50 -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -Dpekko.coordinated-shutdown.exit-jvm=on -Dpekko.cluster.shutdown-after-unsuccessful-join-seed-nodes=180s -Dpekko.cluster.failure-detector.threshold=15.0 -Dpekko.cluster.failure-detector.expected-response-after=10s -Dpekko.cluster.failure-detector.acceptable-heartbeat-pause=20s -Dpekko.cluster.downing-provider-class=
+      # in order to write logs into a file you can enable this by setting the following env variable
+      # the log file(s) can be found in /var/log/ditto directory on the host machine
+      # - DITTO_LOGGING_FILE_APPENDER=true
+      # You may use the environment for setting the devops password
+      #- DEVOPS_PASSWORD=foobar
+    # only needed if DITTO_LOGGING_FILE_APPENDER is set
+    # volumes:
+    #  - ditto_log_files:/var/log/ditto
     networks:
       - ditto-network
 
