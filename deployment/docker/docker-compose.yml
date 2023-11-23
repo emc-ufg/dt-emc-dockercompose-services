@@ -214,9 +214,12 @@ services:
       - swagger-ui
       
   mosquitto:
+    hostname: mosquitto
+    container_name: mosquitto
     image: eclipse-mosquitto
     networks:
       - ditto-network
+      - default
     ports:
       - 1883 #default mqtt port
       - 9001 #default mqtt port for websockets
@@ -386,6 +389,7 @@ services:
       - INFLUXDB_DB=db0
       - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
       - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
+      
   chronograf:
     image: chronograf:latest
     ports:
@@ -398,6 +402,28 @@ services:
       - INFLUXDB_URL=http://influxdb:8086
       - INFLUXDB_USERNAME=${INFLUXDB_USERNAME}
       - INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}
+
+  telegraf:
+    image: docker.io/telegraf:latest
+    container_name: telegraf
+    restart: always
+    depends_on:
+      - influxdb
+      - kafka0
+      - kafka1
+      - kafka-init-topics
+      - kafka-connect0
+      - schemaregistry1
+      - schemaregistry0
+    ports:
+      - '8125:8125'
+    depends_on:
+      - influxdb
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    networks:
+      - ditto-network
+      - default
 
 volumes:
   influxdb-storage:
