@@ -236,6 +236,12 @@ services:
       - "3000:3000"
     networks:
       - ditto-network
+      - default
+    environment:
+      GF_PANELS_DISABLE_SANITIZE_HTML: "true"
+    volumes:
+      - 'grafana_storage:/var/lib/grafana'
+
 
   kafka0:
     image: confluentinc/cp-kafka:7.2.1
@@ -397,6 +403,9 @@ services:
       - INFLUXDB_DB=db0
       - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
       - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
+    networks:
+      - ditto-network
+      - default
       
   chronograf:
     image: chronograf:latest
@@ -411,6 +420,9 @@ services:
       - INFLUXDB_URL=http://influxdb:8086
       - INFLUXDB_USERNAME=${INFLUXDB_USERNAME}
       - INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}
+    networks:
+      - ditto-network
+      - default
 
   telegraf:
     image: docker.io/telegraf:latest
@@ -437,6 +449,7 @@ services:
 volumes:
   influxdb-storage:
   chronograf-storage:
+  grafana_storage:
   ditto_log_files:
     driver: local
     driver_opts:
