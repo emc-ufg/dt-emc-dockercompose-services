@@ -372,7 +372,6 @@ services:
 
   kafka-init-topics:
     image: confluentinc/cp-kafka:7.2.1
-    restart: always
     volumes:
        - ./data/message.json:/data/message.json
     depends_on:
