@@ -23,6 +23,7 @@ Antes de começar, certifique-se de ter o seguinte instalado:
     Execute o seguinte comando para configurar e iniciar o projeto:
 
     ```bash
+    cd deployments/docker
     docker-compose up -d
     ```
 
