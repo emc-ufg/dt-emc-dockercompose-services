@@ -42,4 +42,4 @@ Para parar os contêineres em execução:
 
   ```bash
   docker-compose down
-    ```
+  ```
