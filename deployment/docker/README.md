@@ -1,74 +1,45 @@
-## Eclipse Ditto :: Docker
+# Digital Twin - EMC
 
-This folder contains an example `docker-compose.yml` which can be used to start Eclipse Ditto 
-with its backing Database - MongoDB - and a reverse proxy - nginx - in front of the HTTP and WebSocket API.
+Bem-vindo ao projeto de Gêmeos Digitais da EMC! Este repositório contém todos os arquivos necessários para configuração dos serviços.
 
+## Pré-requisitos
 
-## Resource requirements
+Antes de começar, certifique-se de ter o seguinte instalado:
 
-For a "single instance" setup on a local machine you need at least:
-* 2 CPU cores which can be used by Docker
-* 4 GB of RAM which can be used by Docker
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
-## Configure nginx
+## Início Rápido
 
-The nginx's configuration is located in the `nginx.conf` file and contains a "Basic authentication" 
-for accessing the HTTP and WebSocket API. The users for this sample authentication are configured 
-in the `nginx.httpasswd` file also located in this directory.
+1. **Clone o repositório:**
 
-In order to add a new entry to this file, use the "openssl passwd" tool to create a hashed password:
-```bash
-openssl passwd -quiet
- Password: <enter password>
- Verifying - Password: <enter password>
-```
+    ```bash
+    git clone https://github.com/antonio-emilio/digital-twin-emc.git
+    cd digital-twin-emc
+    ```
 
-Append the printed hash in the `nginx.httpasswd` file placing the username who shall receive this 
-password in front like this:
-```
-ditto:A6BgmB8IEtPTs
-```
+2. **Construa e Inicie os Contêineres:**
 
-## Configuration of the services
+    Execute o seguinte comando para configurar e iniciar o projeto:
 
-You may configure each service via passing system properties via the `JAVA_TOOL_OPTIONS` environment variable in the 
-entrypoint section for each service.
+    ```bash
+    docker-compose up -d
+    ```
 
-```yml
-...
-# Alternative approach for configuration of the service
-environment:
-  - JAVA_TOOL_OPTIONS=-Dditto.gateway.authentication.devops.password=foobar
-```
+    Isso fará o download das imagens necessárias e iniciará os contêineres em segundo plano.
 
-To get a list of available configuration options you may retrieve them from a running instance via:
+3. **Acesse Sua Aplicação:**
 
-```bash
-# Substitute gateway with the service you are interested in
-curl http://devops:foobar@localhost:8080/devops/config/gateway/?path=ditto
-```
+    - Grafana: [http://localhost:3000](http://localhost:3000)
+    - InfluxDB: [http://localhost:8086](http://localhost:8086)
+    - Mosquitto: [http://localhost:1883](http://localhost:1883)
+    - Ditto: [http://localhost:8080](http://localhost:8080)
+    - Kafka: [http://localhost:9092](http://localhost:9092)
 
-Or by going through the configuration files in this repository, all available configuration files are 
-[linked here](https://www.eclipse.dev/ditto/installation-operating.html#ditto-configuration).
+## Parando a Aplicação
 
-## Start Eclipse Ditto
+Para parar os contêineres em execução:
 
-```bash
-docker-compose up -d
-```
-
-Check the logs after starting up:
-```bash
-docker-compose logs -f
-```
-
-Check the resource consumption in order to find out if you e.g. require more memory:
-```bash
-docker stats
-```
-
-## Stop Eclipse Ditto
-
-```bash
-docker-compose down
-```
+  ```bash
+  docker-compose down
+    ```
