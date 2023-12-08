@@ -222,8 +222,7 @@ services:
       - ditto-network
       - default
     ports:
-      - 1883 #default mqtt port
-      - 9001 #default mqtt port for websockets
+      - "1883:1883"
     volumes:
       - ./config:/mosquitto/config:rw
       - ./data:/mosquitto/data:rw
