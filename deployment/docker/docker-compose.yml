@@ -223,6 +223,7 @@ services:
       - default
     ports:
       - "1883:1883"
+      - "9001:9001"
     volumes:
       - ./config:/mosquitto/config:rw
       - ./data:/mosquitto/data:rw
