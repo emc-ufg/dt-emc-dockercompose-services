@@ -239,6 +239,7 @@ services:
       - default
     environment:
       GF_PANELS_DISABLE_SANITIZE_HTML: "true"
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
     volumes:
       - 'grafana_storage:/var/lib/grafana'
 
